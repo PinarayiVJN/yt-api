@@ -11,7 +11,7 @@ DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 def download_youtube_video(url: str, format: str = 'mp4') -> str:
-    yt = YouTube(url, client='ANDROID')
+    yt = YouTube(url, client='ANDROID') # <--- This line is changed
     # Create a safe filename from the title and a unique ID
     # This removes characters that are problematic in filenames
     safe_title = "".join(c for c in yt.title if c.isalnum() or c in (' ', '.', '_')).strip().replace(" ", "_")
@@ -26,12 +26,6 @@ def download_youtube_video(url: str, format: str = 'mp4') -> str:
 
         mp3_path = os.path.join(DOWNLOAD_FOLDER, filename + ".mp3")
         # Use ffmpeg to convert the downloaded audio (MP4 container) to MP3
-        # '-i': input file
-        # '-vn': no video (only audio)
-        # '-ab 192k': audio bitrate (quality)
-        # '-ar 44100': audio sample rate
-        # '-y': overwrite output file if it exists
-        # 'check=True': raises an error if the ffmpeg command fails
         subprocess.run(['ffmpeg', '-i', audio_path, '-vn', '-ab', '192k', '-ar', '44100', '-y', mp3_path], check=True)
         os.remove(audio_path) # Delete the temporary MP4 audio file
         return mp3_path # Return the path to the newly created MP3 file
