@@ -11,7 +11,7 @@ DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 def download_youtube_video(url: str, format: str = 'mp4') -> str:
-    yt = YouTube(url)
+    yt = YouTube(url, client='ANDROID')
     # Create a safe filename from the title and a unique ID
     # This removes characters that are problematic in filenames
     safe_title = "".join(c for c in yt.title if c.isalnum() or c in (' ', '.', '_')).strip().replace(" ", "_")
