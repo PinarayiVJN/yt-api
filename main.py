@@ -4,6 +4,7 @@ from pytubefix import YouTube
 import os
 import uuid
 import subprocess
+import time
 
 app = FastAPI()
 
@@ -11,29 +12,25 @@ DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 def download_youtube_video(url: str, format: str = 'mp4') -> str:
-    yt = YouTube(url, client='ANDROID') # <--- This line is changed
+    time.sleep(15) # <--- THIS IS THE AGGRESSIVE FIX. Now a 15-second delay.
+    yt = YouTube(url, client='ANDROID')
     # Create a safe filename from the title and a unique ID
     # This removes characters that are problematic in filenames
     safe_title = "".join(c for c in yt.title if c.isalnum() or c in (' ', '.', '_')).strip().replace(" ", "_")
-    video_id = uuid.uuid4().hex # Generates a random, unique 32-character string
-    filename = f"{safe_title}_{video_id}" # Combines safe title and unique ID
+    video_id = uuid.uuid4().hex
+    filename = f"{safe_title}_{video_id}"
 
     if format == 'mp3':
-        # Select the best quality audio stream
         audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
-        # Download the audio stream (it often comes as an .mp4 container for audio)
         audio_path = audio_stream.download(output_path=DOWNLOAD_FOLDER, filename=filename + ".mp4")
 
         mp3_path = os.path.join(DOWNLOAD_FOLDER, filename + ".mp3")
-        # Use ffmpeg to convert the downloaded audio (MP4 container) to MP3
         subprocess.run(['ffmpeg', '-i', audio_path, '-vn', '-ab', '192k', '-ar', '44100', '-y', mp3_path], check=True)
-        os.remove(audio_path) # Delete the temporary MP4 audio file
-        return mp3_path # Return the path to the newly created MP3 file
+        os.remove(audio_path)
+        return mp3_path
 
-    else: # Default format is 'mp4'
-        # Select the best quality progressive MP4 stream (contains both audio and video)
+    else:
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
-        # Download the progressive MP4 stream
         return stream.download(output_path=DOWNLOAD_FOLDER, filename=filename + ".mp4")
 
 @app.get("/") # This defines an API endpoint for the root URL "/"
