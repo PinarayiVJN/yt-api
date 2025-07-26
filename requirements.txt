@@ -2,3 +2,4 @@ fastapi
 uvicorn
 pytubefix
 ffmpeg-python
+pydantic
